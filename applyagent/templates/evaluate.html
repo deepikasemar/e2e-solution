@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Evaluation · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Measured results</h1>
+  <p class="lede">These figures are computed when you open the page. Parsing, skills and ranking use the labelled sample set. Ratings and time use whatever is in your tracker.</p>
+{% endblock %}
+{% block body %}
+  <section class="grid-3">
+    <article class="card">
+      <h2>Resume parsing</h2>
+      <p class="stat">{{ '%.0f'|format(report.parsing.accuracy * 100) }}%</p>
+      <p>Field accuracy on the example resume: {{ report.parsing.correct }} of {{ report.parsing.total }} checks.</p>
+      <ul class="checks">
+        {% for name, ok in report.parsing.checks.items() %}
+          <li class="{% if ok %}yes{% else %}no{% endif %}">{{ name }}</li>
+        {% endfor %}
+      </ul>
+    </article>
+    <article class="card">
+      <h2>Skill extraction</h2>
+      <p class="stat">F1 {{ '%.2f'|format(report.skills.overall.f1) }}</p>
+      <p>Precision {{ '%.2f'|format(report.skills.overall.precision) }} · Recall {{ '%.2f'|format(report.skills.overall.recall) }} on {{ report.skills.rows|length }} labelled snippets. TP {{ report.skills.overall.tp }} · FP {{ report.skills.overall.fp }} · FN {{ report.skills.overall.fn }}.</p>
+    </article>
+    <article class="card">
+      <h2>Ranking</h2>
+      <p class="stat">P@10 {{ '%.2f'|format(report.ranking.precision_at_10) }}</p>
+      <p>Precision@5 {{ '%.2f'|format(report.ranking.precision_at_5) }} · NDCG@10 {{ '%.2f'|format(report.ranking.ndcg_at_10) }}. Backend {{ report.ranking.backend }}. Labels: six Python-related sample jobs are relevant for the example student.</p>
+    </article>
+  </section>
+
+  <section class="grid-3">
+    <article class="card">
+      <h2>Generated text</h2>
+      <p class="stat">{% if report.generation.passed %}Pass{% else %}Check{% endif %}</p>
+      <p>The template letter for Sutlej Labs has {{ report.generation.truthful_flags }} fact-check flags and {{ report.generation.cover_letter_words }} words. A copy with an added Kubernetes claim raises {{ report.generation.poisoned_flags }} flag.</p>
+      {% if report.tracker.fact_check_pass_rate is not none %}
+        <p>Your saved drafts with no flags: {{ '%.0f'|format(report.tracker.fact_check_pass_rate * 100) }}%.</p>
+      {% else %}
+        <p>No drafts yet, so the live fact-check pass rate is empty.</p>
+      {% endif %}
+    </article>
+    <article class="card">
+      <h2>Your ratings</h2>
+      {% if report.tracker.average_rating is not none %}
+        <p class="stat">{{ '%.1f'|format(report.tracker.average_rating) }}</p>
+        <p>Average of {{ report.tracker.rated_count }} rating{{ 's' if report.tracker.rated_count != 1 else '' }} you gave on the review page, from 1 to 5.</p>
+      {% else %}
+        <p class="stat">—</p>
+        <p>Rate a draft on the review page. The average will show here. There is no hidden default score.</p>
+      {% endif %}
+    </article>
+    <article class="card">
+      <h2>Time</h2>
+      <p class="stat">{{ '%.0f'|format(report.tracker.minutes_saved_each) }} min</p>
+      <p>A careful manual application is estimated at about {{ report.tracker.manual_minutes }} minutes. This page subtracts an {{ 8 }} minute review plus the measured draft time ({{ '%.2f'|format(report.tracker.agent_minutes - 8) }} min). The difference is an estimate, not a stopwatch study.</p>
+    </article>
+  </section>
+
+  <section class="card">
+    <h2>Ranking order for the example student</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Job</th><th>Score</th><th>Label</th></tr>
+        </thead>
+        <tbody>
+          {% for job in report.ranking.order %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ job.title }} · {{ job.company }}</td>
+              <td>{{ '%.0f'|format(job.score * 100) }}</td>
+              <td>{% if job.relevant %}relevant{% else %}distractor{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Skill snippets</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Text</th><th>Expected</th><th>Found</th></tr>
+        </thead>
+        <tbody>
+          {% for row in report.skills.rows %}
+            <tr>
+              <td>{{ row.text }}</td>
+              <td>{{ row.truth|join(', ') or '—' }}</td>
+              <td>{{ row.predicted|join(', ') or '—' }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

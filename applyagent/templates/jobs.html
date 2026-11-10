@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Jobs · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Ranked openings</h1>
+  <p class="lede">
+    {% if profile and profile.skills %}
+      Sorted for {{ profile.full_name or "your profile" }} with {{ backend }}. {{ jobs|length }} shown of {{ total }}.
+    {% else %}
+      These are unsorted until a profile with skills is saved. {{ total }} postings are stored locally.
+    {% endif %}
+  </p>
+{% endblock %}
+{% block body %}
+  <section class="card toolbar">
+    <form method="get" class="filters">
+      <label>Search <input name="q" value="{{ query }}" placeholder="Python, Mohali, Flask"></label>
+      <label>Work
+        <select name="work">
+          <option value="">Any</option>
+          {% for value in ['remote', 'hybrid', 'onsite'] %}
+            <option value="{{ value }}" {% if work == value %}selected{% endif %}>{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Region
+        <select name="region">
+          <option value="">Anywhere</option>
+          <option value="punjab" {% if region == 'punjab' %}selected{% endif %}>Punjab and Chandigarh</option>
+        </select>
+      </label>
+      <button class="button secondary" type="submit">Filter</button>
+    </form>
+    <form method="post" action="{{ url_for('collect') }}">
+      <button class="button" type="submit">Refresh permitted sources</button>
+    </form>
+  </section>
+
+  {% if not jobs %}
+    <section class="card empty">
+      <h2>No openings match this filter</h2>
+      <p>Clear the search, or refresh sources. The bundled set is always kept.</p>
+    </section>
+  {% endif %}
+
+  <div class="job-list">
+    {% for job in jobs %}
+      <article class="card job">
+        <div class="job-top">
+          <div>
+            <p class="kicker">{% if job.rank %}#{{ job.rank }} · {% endif %}{{ job.source }} · {{ job.work_type }} · {{ job.level }}</p>
+            <h2><a href="{{ url_for('job_detail', job_id=job.id) }}">{{ job.title }}</a></h2>
+            <p class="meta">{{ job.company }} · {{ job.location or "Location not listed" }}{% if job.salary %} · {{ job.salary }}{% endif %}</p>
+          </div>
+          {% if job.score is not none %}
+            <div class="ring" style="--p: {{ job.score|pct }}" aria-label="Match {{ job.score|pct }}">
+              <span>{{ job.score|pct }}</span>
+            </div>
+          {% endif %}
+        </div>
+        {% if job.matched_skills is defined %}
+          <p class="chips">
+            {% for skill in job.matched_skills %}<span class="chip yes">{{ skill }}</span>{% endfor %}
+            {% for skill in job.missing_skills %}<span class="chip no">missing {{ skill }}</span>{% endfor %}
+            {% if not job.matched_skills and not job.missing_skills %}<span class="hint">No lexicon skills were found in this posting.</span>{% endif %}
+          </p>
+          <p class="hint">Skill {{ '%.0f'|format(job.skill_score * 100) }} · Semantic {{ '%.0f'|format(job.semantic_score * 100) }} · Preference {{ '%.0f'|format(job.preference_score * 100) }}</p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </div>
+{% endblock %}

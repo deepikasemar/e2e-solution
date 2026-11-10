@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>{{ job.title }}</h1>
+  <p class="lede">{{ job.company }} · {{ job.location or "Location not listed" }} · {{ job.work_type }} · {{ job.level }}{% if position %} · rank {{ position }} of {{ total }}{% endif %}</p>
+{% endblock %}
+{% block body %}
+  <section class="card">
+    {% if job.score is defined and job.score is not none %}
+      <div class="score-row">
+        <div class="ring lg" style="--p: {{ job.score|pct }}"><span>{{ job.score|pct }}</span></div>
+        <div>
+          <p>Match = {{ '%.2f'|format(job.weights.skill) }} × {{ '%.2f'|format(job.skill_score) }} + {{ '%.2f'|format(job.weights.semantic) }} × {{ '%.2f'|format(job.semantic_score) }} + {{ '%.2f'|format(job.weights.preference) }} × {{ '%.2f'|format(job.preference_score) }}</p>
+          <p class="hint">Semantic backend: {{ backend }}.</p>
+        </div>
+      </div>
+      <p class="chips">
+        {% for skill in job.matched_skills %}<span class="chip yes">{{ skill }}</span>{% endfor %}
+        {% for skill in job.missing_skills %}<span class="chip no">missing {{ skill }}</span>{% endfor %}
+      </p>
+    {% elif not profile or not profile.skills %}
+      <p class="empty-inline">Save a profile with skills to see a match score. The description below is still readable.</p>
+    {% endif %}
+    <h2>Description</h2>
+    <div class="prose preserve">{{ job.description }}</div>
+    <p class="meta">Source: {{ job.source }}{% if job.posted_date %} · posted {{ job.posted_date }}{% endif %}{% if job.salary %} · {{ job.salary }}{% endif %}</p>
+    <div class="row-actions">
+      {% if job.url %}
+        <a class="button secondary" href="{{ job.url }}" target="_blank" rel="noreferrer">Open original posting</a>
+      {% endif %}
+      <form method="post" action="{{ url_for('start_draft', job_id=job.id) }}">
+        <button class="button" type="submit">Draft summary and cover letter</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

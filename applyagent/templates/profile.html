@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Profile · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Verified profile</h1>
+  <p class="lede">This page is the only source of facts for ranking and for the cover letter. Parsing is a suggestion. Correct it before you continue.</p>
+{% endblock %}
+{% block body %}
+  <section class="card">
+    <h2>Start from a resume</h2>
+    <div class="split actions">
+      <form method="post" action="{{ url_for('upload_resume') }}" enctype="multipart/form-data" class="stack">
+        <label for="resume">PDF, DOCX or TXT, up to 6 MB</label>
+        <input id="resume" name="resume" type="file" accept=".pdf,.docx,.txt,.md">
+        <button class="button" type="submit">Read resume</button>
+      </form>
+      <form method="post" action="{{ url_for('load_example') }}" class="stack">
+        <p>Or load Aarav Mehta, a fictional final-year student: Python, SQL, Flask, machine learning, remote or Punjab.</p>
+        <button class="button secondary" type="submit">Load example profile</button>
+        <p class="hint">
+          Sample file:
+          <a href="{{ url_for('sample_txt') }}">TXT</a> ·
+          <a href="{{ url_for('sample_pdf') }}">PDF</a> ·
+          <a href="{{ url_for('sample_docx') }}">DOCX</a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <form method="post" class="stack-lg">
+    <section class="card">
+      <h2>Contact</h2>
+      <div class="fields">
+        <label>Full name <input name="full_name" value="{{ form.full_name }}" autocomplete="name"></label>
+        <label>Email <input name="email" type="email" value="{{ form.email }}" autocomplete="email"></label>
+        <label>Phone <input name="phone" value="{{ form.phone }}" autocomplete="tel"></label>
+        <label>Location <input name="location" value="{{ form.location }}"></label>
+      </div>
+      <p class="hint">Name, email and phone are stored for the form packet. They are not used in the match score.</p>
+    </section>
+
+    <section class="card">
+      <h2>Story</h2>
+      <label>Headline <input name="headline" value="{{ form.headline }}"></label>
+      <label>Summary <textarea name="summary" rows="4">{{ form.summary }}</textarea></label>
+      <label>Skills, comma or line separated
+        <textarea name="skills" rows="3">{{ form.skills }}</textarea>
+      </label>
+      <p class="hint">Known tools are normalised (ML becomes machine learning). Anything you delete here will not be claimed in a letter.</p>
+    </section>
+
+    <section class="card">
+      <h2>Education, experience, projects</h2>
+      <label>Education — one line each: degree | institution | year
+        <textarea name="education" rows="4">{{ form.education }}</textarea>
+      </label>
+      <label>Experience — title | company | start | end | what you did
+        <textarea name="experience" rows="4">{{ form.experience }}</textarea>
+      </label>
+      <label>Projects — name | description
+        <textarea name="projects" rows="4">{{ form.projects }}</textarea>
+      </label>
+    </section>
+
+    <section class="card">
+      <h2>Preferences and match weights</h2>
+      <div class="fields">
+        <label>Target role <input name="target_role" value="{{ form.target_role }}" placeholder="Python Developer"></label>
+        <label>Locations <input name="locations" value="{{ form.locations }}" placeholder="Remote, Punjab"></label>
+        <label>Work type
+          <select name="work_type">
+            {% for value in ['any', 'remote', 'hybrid', 'onsite'] %}
+              <option value="{{ value }}" {% if form.work_type == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Level
+          <select name="level">
+            {% for value in ['any', 'intern', 'entry', 'mid'] %}
+              <option value="{{ value }}" {% if form.level == value %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="fields weights">
+        <label>Skill weight <input name="w_skill" value="{{ form.w_skill }}" inputmode="decimal"></label>
+        <label>Semantic weight <input name="w_semantic" value="{{ form.w_semantic }}" inputmode="decimal"></label>
+        <label>Preference weight <input name="w_preference" value="{{ form.w_preference }}" inputmode="decimal"></label>
+      </div>
+      <p class="hint">Match = w1 × skill overlap + w2 × cosine similarity + w3 × preference. Defaults are 0.50, 0.35 and 0.15. Values that do not sum to 1 are rescaled.</p>
+      <label>Notes for yourself <textarea name="notes" rows="2">{{ form.notes }}</textarea></label>
+      <button class="button" type="submit">Save verified profile</button>
+    </section>
+  </form>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Overview · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Apply with the facts on your profile, not a generic resume.</h1>
+  <p class="lede">The agent reads a resume, ranks openings by skill overlap and meaning, drafts a cover letter from the profile you confirmed, and waits for your approval before it records an application.</p>
+{% endblock %}
+{% block body %}
+  <ol class="steps">
+    {% for step in steps %}
+      <li class="{% if step.done %}done{% endif %}">
+        <a href="{{ step.href }}">
+          <span>{{ loop.index }}</span>
+          {{ step.name }}
+        </a>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <section class="grid-3">
+    <article class="card">
+      <h2>Profile</h2>
+      {% if profile and profile.skills %}
+        <p class="stat">{{ profile.full_name or "Unnamed profile" }}</p>
+        <p>{{ profile.skills|length }} verified skills{% if profile.preferences.target_role %} · looking for {{ profile.preferences.target_role }}{% endif %}.</p>
+      {% else %}
+        <p>No verified profile yet. Load the example student or upload your own resume, then correct the fields.</p>
+      {% endif %}
+      <a class="button" href="{{ url_for('profile') }}">Open profile</a>
+    </article>
+    <article class="card">
+      <h2>Openings</h2>
+      <p class="stat">{{ job_count }}</p>
+      <p>Bundled postings are ready offline. Refresh to add public remote roles from Remotive and We Work Remotely.</p>
+      <a class="button secondary" href="{{ url_for('jobs') }}">Rank jobs</a>
+    </article>
+    <article class="card">
+      <h2>Tracker</h2>
+      <p class="stat">{{ application_total }}</p>
+      <p>
+        {% if counts %}
+          {% for status, count in counts.items() %}{{ count }} {{ status }}{% if not loop.last %} · {% endif %}{% endfor %}
+        {% else %}
+          Drafts you approve will be listed here with status, date and the letter you kept.
+        {% endif %}
+      </p>
+      <a class="button secondary" href="{{ url_for('tracker') }}">Open tracker</a>
+    </article>
+  </section>
+
+  <section class="card prose">
+    <h2>What the agent will and will not do</h2>
+    <div class="split">
+      <div>
+        <h3>It does</h3>
+        <ul>
+          <li>Extract skills, education, projects and contact lines from PDF, DOCX or TXT.</li>
+          <li>Score jobs as skill overlap plus cosine similarity plus your location, role and work-type preferences.</li>
+          <li>Show matching skills and missing skills, including a gap such as Docker.</li>
+          <li>Write a summary and a cover letter, then flag skills that are not on the profile.</li>
+          <li>Prefill an application packet after you approve it, and keep a daily limit.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>It does not</h3>
+        <ul>
+          <li>Send an application to a company, or click through a portal for you.</li>
+          <li>Use your name, gender, age or phone number to rank jobs.</li>
+          <li>Invent employers, dates or tools so the letter sounds stronger.</li>
+          <li>Promise an interview. The evaluation page shows measured scores, not a placement claim.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+{% endblock %}

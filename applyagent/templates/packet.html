@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Prefilled form · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Prefilled application packet</h1>
+  <p class="lede">Copy these fields into the employer form. This page does not submit them.</p>
+{% endblock %}
+{% block body %}
+  <section class="card packet">
+    <dl>
+      <div><dt>Name</dt><dd>{{ application.form.full_name }}</dd></div>
+      <div><dt>Email</dt><dd>{{ application.form.email }}</dd></div>
+      <div><dt>Phone</dt><dd>{{ application.form.phone }}</dd></div>
+      <div><dt>Location</dt><dd>{{ application.form.location }}</dd></div>
+      <div><dt>Applying for</dt><dd>{{ application.form.job_title }} at {{ application.form.company }}</dd></div>
+      <div><dt>Skills</dt><dd>{{ application.form.skills|join(', ') }}</dd></div>
+    </dl>
+    <h2>Summary</h2>
+    <p class="preserve" id="packet-summary">{{ application.form.summary }}</p>
+    <h2>Cover letter</h2>
+    <p class="preserve" id="packet-letter">{{ application.form.cover_letter }}</p>
+    <div class="row-actions">
+      <button class="button secondary" type="button" data-copy="packet-letter">Copy letter</button>
+      {% if application.form.job_url %}
+        <a class="button" href="{{ application.form.job_url }}" target="_blank" rel="noreferrer">Open original posting</a>
+      {% endif %}
+      <a class="button ghost" href="{{ url_for('review', application_id=application.id) }}">Back to review</a>
+    </div>
+  </section>
+{% endblock %}

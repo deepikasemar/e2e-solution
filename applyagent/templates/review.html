@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Review {{ application.title }} · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Review before anything is recorded</h1>
+  <p class="lede">{{ application.title }} at {{ application.company }} · status {{ application.status }} · written by {{ application.writer }}{% if application.generation_ms is not none %} · draft took {{ application.generation_ms }} ms{% endif %}</p>
+{% endblock %}
+{% block body %}
+  {% if application.match and application.match.score is not none %}
+    <section class="card compact">
+      <p>Match {{ '%.0f'|format(application.match.score * 100) }}. Overlap: {{ application.match.matched_skills|join(', ') or 'none' }}. Missing: {{ application.match.missing_skills|join(', ') or 'none' }}.</p>
+    </section>
+  {% endif %}
+
+  {% if application.fact_flags %}
+    <section class="card warn">
+      <h2>Fact check found unsupported claims</h2>
+      <ul>
+        {% for flag in application.fact_flags %}
+          <li>{{ flag.detail }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% else %}
+    <section class="card ok">
+      <h2>Fact check</h2>
+      <p>No skill in this draft is outside the verified skill list, and no unsupported years-of-experience claim was found.</p>
+    </section>
+  {% endif %}
+
+  <form method="post" class="stack-lg">
+    <section class="card">
+      <label>Tailored resume summary <textarea name="summary" rows="6">{{ application.summary }}</textarea></label>
+      <label>Cover letter <textarea id="letter" name="cover_letter" rows="14">{{ application.cover_letter }}</textarea></label>
+      <button class="button ghost" type="button" data-copy="letter">Copy letter</button>
+    </section>
+    <section class="card row-actions">
+      {% if application.fact_flags %}
+        <label class="ack"><input type="checkbox" name="acknowledge" value="yes"> I edited the draft, or I accept that a flagged phrase is still true.</label>
+      {% endif %}
+      <button class="button secondary" name="action" value="save">Save draft</button>
+      <button class="button secondary" name="action" value="regenerate">Regenerate from profile</button>
+      <button class="button" name="action" value="approve">Approve</button>
+      <button class="button danger" name="action" value="reject">Reject</button>
+      <button class="button" name="action" value="apply">Record as applied</button>
+    </section>
+  </form>
+
+  <section class="card">
+    <h2>After approval</h2>
+    <p>The prefilled packet is for you to copy onto the employer form. Recording “applied” only updates this tracker and counts toward today’s limit of {{ limit }} (midnight IST).</p>
+    <div class="row-actions">
+      <a class="button secondary" href="{{ url_for('packet', application_id=application.id) }}">Open prefilled form</a>
+    </div>
+    <form method="post" class="rate">
+      <input type="hidden" name="action" value="rate">
+      <label>Your rating of this draft
+        <select name="rating">
+          <option value="">Not rated</option>
+          {% for n in [1, 2, 3, 4, 5] %}
+            <option value="{{ n }}" {% if application.rating == n %}selected{% endif %}>{{ n }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="button secondary" type="submit">Save rating</button>
+    </form>
+  </section>
+{% endblock %}

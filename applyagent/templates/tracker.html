@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Tracker · ApplyAgent{% endblock %}
+{% block heading %}
+  <h1>Application tracker</h1>
+  <p class="lede">Every draft, approval and recorded application stays in the local SQLite database. Update the status when a reply arrives.</p>
+{% endblock %}
+{% block body %}
+  <p class="row-actions"><a class="button secondary" href="{{ url_for('tracker_csv') }}">Download CSV</a></p>
+  {% if not applications %}
+    <section class="card empty">
+      <h2>No applications yet</h2>
+      <p>Rank a job and draft a letter. It will appear here as soon as the draft is stored.</p>
+      <a class="button" href="{{ url_for('jobs') }}">Find a job</a>
+    </section>
+  {% else %}
+    <div class="table-wrap card">
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Recorded</th>
+            <th>Flags</th>
+            <th>Rating</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in applications %}
+            <tr>
+              <td>
+                <strong>{{ item.title }}</strong>
+                <span class="meta">{{ item.company }}</span>
+              </td>
+              <td>
+                <form method="post" action="{{ url_for('tracker_status', application_id=item.id) }}" class="inline">
+                  <select name="status" aria-label="Status for {{ item.title }}">
+                    {% for status in statuses %}
+                      <option value="{{ status }}" {% if item.status == status %}selected{% endif %}>{{ status }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="button tiny" type="submit">Update</button>
+                </form>
+              </td>
+              <td>{{ item.applied_on or "—" }}</td>
+              <td>{{ item.fact_flags|length }}</td>
+              <td>{{ item.rating or "—" }}</td>
+              <td><a href="{{ url_for('review', application_id=item.id) }}">Open</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: applyagent
+    runtime: docker
+    plan: free
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: DAILY_LIMIT
+        value: "8"
+      - key: SEMANTIC_BACKEND
+        value: tfidf
+      - key: DATABASE_PATH
+        value: /data/applyagent.sqlite

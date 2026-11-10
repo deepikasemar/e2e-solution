@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ApplyAgent{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to content</a>
+  <div class="shell">
+    <aside class="side">
+      <a class="brand" href="{{ url_for('home') }}">
+        <span class="mark" aria-hidden="true">Aa</span>
+        <span>
+          <strong>ApplyAgent</strong>
+          <em>Verified applications</em>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="{{ url_for('home') }}" {% if request.endpoint == 'home' %}aria-current="page"{% endif %}>Overview</a>
+        <a href="{{ url_for('profile') }}" {% if request.endpoint in ['profile', 'upload_resume', 'load_example'] %}aria-current="page"{% endif %}>Profile</a>
+        <a href="{{ url_for('jobs') }}" {% if request.endpoint in ['jobs', 'job_detail', 'collect'] %}aria-current="page"{% endif %}>Jobs</a>
+        <a href="{{ url_for('tracker') }}" {% if request.endpoint in ['tracker', 'review', 'packet'] %}aria-current="page"{% endif %}>Tracker</a>
+        <a href="{{ url_for('evaluate') }}" {% if request.endpoint == 'evaluate' %}aria-current="page"{% endif %}>Evaluation</a>
+      </nav>
+      <p class="limit">{{ applied_today }} of {{ daily_limit }} recorded today <span>IST</span></p>
+    </aside>
+    <div class="main">
+      <header class="top">
+        <p class="eyebrow">AI-powered job application agent</p>
+        {% block heading %}{% endblock %}
+      </header>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flashes">
+            {% for category, message in messages %}
+              <p class="flash {{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <div id="content">
+        {% block body %}{% endblock %}
+      </div>
+      <footer class="foot">
+        <p>Prototype for the B.Tech project at Sardar Beant Singh State University, Gurdaspur. Deepika (23303085) and Abhay Sharma (23303003), supervised by Mr. Ajay Dogra.</p>
+        <p>Nothing in this app is submitted to an employer. You approve every draft, then apply yourself. Ranking ignores name, email and phone.</p>
+      </footer>
+    </div>
+  </div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

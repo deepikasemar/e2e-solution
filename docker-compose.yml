@@ -1,0 +1,14 @@
+services:
+  applyagent:
+    build: .
+    ports:
+      - "43123:43123"
+    environment:
+      DAILY_LIMIT: "8"
+      SEMANTIC_BACKEND: tfidf
+      DATABASE_PATH: /data/applyagent.sqlite
+    volumes:
+      - applyagent-data:/data
+
+volumes:
+  applyagent-data:
